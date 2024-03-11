@@ -11,6 +11,7 @@
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
         "nesbot/carbon": "^2.72",
+        "srmklive/paypal": "^3.0",
         "tymon/jwt-auth": "^2.0"
     },
     "require-dev": {

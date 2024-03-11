@@ -170,9 +170,10 @@ Route::post('/tickets/update', [TicketController::class, 'update']);
 
 //Test
 
-
 //Paypal
-Route::post('/paypal/create-order', [PayPalController::class, 'createOrder']);
+Route::post('/paypal', [PaypalController::class, 'paypal'])->name('paypal');
+Route::post('/success', [PaypalController::class, 'success'])->name('success');
+Route::post('/cancel', [PaypalController::class, 'cancel'])->name('cancel');
 
 
 //Test function
