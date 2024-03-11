@@ -82,6 +82,7 @@ class CoachController extends Controller
     public function store(Request $request)
     {
         try {
+            // return $request;
             // Lấy các quy tắc xác thực từ ValidationService
             $validatedData = $this->validationService->getUserValidationRules($request)
                 + $this->validationService->getCoachValidationRules($request);
@@ -181,7 +182,7 @@ class CoachController extends Controller
                     $user->save();
 
                     // Cập nhật thông tin cầu thủ
-                    $coach->fill($request->only(['wins', 'losses', 'draws', 'detail']));
+                    $coach->fill($request->only(['position','wins', 'losses', 'draws', 'detail']));
 
                     // Lưu cầu thủ cập nhật vào cơ sở dữ liệu
                     $coach->save();

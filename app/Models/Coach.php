@@ -13,6 +13,7 @@ class Coach extends Model
 
     protected $fillable = [
         'user_id', // Khóa chính của người dùng
+        'position',
         'wins',
         'losses',
         'draws',
