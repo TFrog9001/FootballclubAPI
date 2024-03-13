@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
 class PaypalController extends Controller
@@ -14,28 +15,24 @@ class PaypalController extends Controller
 
         $paypalToken = $provider->getAccessToken();
 
-        $respone = $provider->createOrder([
+        $response = $provider->createOrder([
             "intent" => "CAPTURE",
             "application_context" => [
-                "return_url" => route('success'),
-                "cancel_url" => route('cancel')
+                "return_url" => route('paypal.success'),
+                "cancel_url" => route('paypal.cancel')
             ],
             "purchase_units" => [
                 [
                     "amount" => [
                         "currency_code" => "USD",
-                        "value" => $request->price
+                        "value" => $request->input('ticket.cost')
                     ]
                 ]
             ]
         ]);
 
-        if(isset($respone['id']) && $respone['id'] != null){
-            foreach($respone['links'] as $link){
-                if($link['rel'] === 'approve'){
-                    return response()->json(['approval_url' => $link['href']], 200);
-                }
-            }
+        if(isset($response['id']) && $response['id'] != null){
+            return response()->json(['orderId' => $response['id']], 200);
         }
 
         return response()->json(['error' => 'Failed to create PayPal order'], 500);
@@ -43,24 +40,15 @@ class PaypalController extends Controller
 
     public function success(Request $request)
     {
-        $provider = new PayPalClient;
-        $provider->setApiCredentials(config('paypal'));
-
-        $paypalToken = $provider->getAccessToken();
-
-        $respone = $provider->capturePaymentOrder($request->token);
-
-        if(isset($respone['status']) && $respone['status'] == 'COMPLETED'){
-
-
-            return response()->json(['message' => 'Payment completed successfully'], 200);
-        }else{
-            return response()->json(['error' => 'Payment failed'], 500);
-        }
+        // Xử lý thanh toán thành công ở đây
+        // Ví dụ: trả về thông báo thành công
+        return response()->json(['message' => 'Payment completed successfully'], 200);
     }
 
     public function cancel()
     {
+        // Xử lý khi thanh toán bị hủy
+        // Ví dụ: trả về thông báo hủy bỏ
         return response()->json(['message' => 'Payment has been canceled'], 200);
     }
 }
