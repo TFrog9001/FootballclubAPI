@@ -41,7 +41,6 @@ class TicketController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,user_id',
             'game_id' => 'required|exists:games,game_id',
-            'stadium_id' => 'required|exists:stadiums,stadium_id',
             'stand' => 'required',
             'list_seats' => 'required|array',
             'list_seats.*' => 'exists:seats,seat_id',
@@ -49,7 +48,7 @@ class TicketController extends Controller
 
         $result = DB::table('seats as s')
             ->leftJoin('tickets as t', 's.seat_id', '=', 't.seat_id')
-            ->where('s.stadium_id', $request->stadium_id)
+            ->where('t.game_id', $request->game_id)
             ->where('s.stand', $request->stand)
             ->whereIn('s.seat_id', $request->list_seats)
             ->whereNotNull('t.ticket_id')
@@ -66,8 +65,7 @@ class TicketController extends Controller
             // Create tickets for each seat in the list
             foreach ($request->input('list_seats') as $seatId) {
                 // Get the seat information including the price
-                $seat = Seat::where('stadium_id', $request->stadium_id)
-                    ->where('seat_id', $seatId)
+                $seat = Seat::where('seat_id', $seatId)
                     ->firstOrFail();
 
                 // Create a new ticket with the price from the seat
