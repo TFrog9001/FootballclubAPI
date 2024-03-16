@@ -22,11 +22,11 @@ class SeatController extends Controller
         }
     }
 
-    public function show($id)
+    public function show($stand)
     {
         try {
-            $seat = Seat::findOrFail($id);
-            return response()->json(['seats' => new SeatResource($seat)]);
+            $seats = Seat::where("stand", $stand)->get(); // Sử dụng get() để lấy danh sách các ghế
+            return response()->json(['seats' => SeatResource::collection($seats)]); // Sử dụng SeatResource::collection để chuyển đổi danh sách ghế
         } catch (Exception $e) {
             return response()->json(['error' => 'Seat not found'], 404);
         }

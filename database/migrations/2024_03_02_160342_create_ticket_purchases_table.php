@@ -17,8 +17,8 @@ return new class extends Migration
             $table->unsignedInteger('ticket_id');
             $table->timestamp('purchase_date')->useCurrent();
 
-            $table->foreign('user_id')->references('user_id')->on('users');
-            $table->foreign('ticket_id')->references('ticket_id')->on('tickets');
+            $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
+            $table->foreign('ticket_id')->references('ticket_id')->on('tickets')->onDelete('cascade');
             $table->timestamps();
         });
     }

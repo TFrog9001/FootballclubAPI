@@ -156,8 +156,8 @@ Route::post('/lineup/{id}', [TeamLineupController::class, 'update']);
 Route::delete('/lineup/{id}', [TeamLineupController::class, 'delete']);
 
 // Seat
-Route::get('/seats',[SeatController::class, 'index']);
-Route::get('/seats/{id}',[SeatController::class, 'show']);
+Route::get('/seats',[SeatController::class, 'index']); // Lấy hết
+Route::get('/seats/{stand}',[SeatController::class, 'show']); // Lấy theo stand W E N S
 Route::post('/seats/create',[SeatController::class, 'create']);
 Route::post('/seats/update',[SeatController::class, 'update']);
 Route::post('/seats/delete',[SeatController::class, 'destroy']);

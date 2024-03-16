@@ -42,18 +42,19 @@ class TicketController extends Controller
             'user_id' => 'required|exists:users,user_id',
             'game_id' => 'required|exists:games,game_id',
             'stadium_id' => 'required|exists:stadiums,stadium_id',
+            'stand' => 'required',
             'list_seats' => 'required|array',
             'list_seats.*' => 'exists:seats,seat_id',
         ]);
 
         $result = DB::table('seats as s')
             ->leftJoin('tickets as t', 's.seat_id', '=', 't.seat_id')
-            ->where('s.stadium_id', 1)
-            ->where('s.stand', 'W')
-            ->whereIn('s.seat_id', ['W1', 'W2', 'W3'])
+            ->where('s.stadium_id', $request->stadium_id)
+            ->where('s.stand', $request->stand)
+            ->whereIn('s.seat_id', $request->list_seats)
             ->whereNotNull('t.ticket_id')
             ->get();
-        if($result){
+        if(!$result->isEmpty()){
             return response()->json(['error' => 'Seat(s) already booked'], 400);
         }
 
