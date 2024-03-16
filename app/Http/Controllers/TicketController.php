@@ -11,6 +11,7 @@ use App\Models\Ticket;
 use App\Http\Resources\TicketResource;
 use App\Models\Seat;
 use App\Models\Game;
+use App\Models\TicketPurchase;
 
 class TicketController extends Controller
 {
@@ -36,54 +37,69 @@ class TicketController extends Controller
 
     public function create(Request $request)
     {
+        // Validate incoming request data
+        $request->validate([
+            'user_id' => 'required|exists:users,user_id',
+            'game_id' => 'required|exists:games,game_id',
+            'stadium_id' => 'required|exists:stadiums,stadium_id',
+            'list_seats' => 'required|array',
+            'list_seats.*' => 'exists:seats,seat_id',
+        ]);
+
+        $result = DB::table('seats as s')
+            ->leftJoin('tickets as t', 's.seat_id', '=', 't.seat_id')
+            ->where('s.stadium_id', 1)
+            ->where('s.stand', 'W')
+            ->whereIn('s.seat_id', ['W1', 'W2', 'W3'])
+            ->whereNotNull('t.ticket_id')
+            ->get();
+        if($result){
+            return response()->json(['error' => 'Seat(s) already booked'], 400);
+        }
+
+        // Start a database transaction
+        \DB::beginTransaction();
         try {
-            // Validate the request data
-            $validatedData = $request->validate([
-                'game_id' => 'required|exists:games,game_id',
-                'seat_id' => 'required|exists:seats,seat_id',
-            ]);
+            // Check if any of the seats are already booked for the given game_id
 
-            // Check if a ticket already exists for the provided game_id and seat_id
-            $existingTicket = Ticket::where('game_id', $validatedData['game_id'])
-                ->where('seat_id', $validatedData['seat_id'])
-                ->exists();
+            // Create tickets for each seat in the list
+            foreach ($request->input('list_seats') as $seatId) {
+                // Get the seat information including the price
+                $seat = Seat::where('stadium_id', $request->stadium_id)
+                    ->where('seat_id', $seatId)
+                    ->firstOrFail();
 
-            if ($existingTicket) {
-                return response()->json(['error' => 'A ticket already exists for the specified game and seat'], 400);
+                // Create a new ticket with the price from the seat
+                $ticket = new Ticket([
+                    'game_id' => $request->input('game_id'),
+                    'seat_id' => $seatId,
+                    'price' => $seat->price, // Assign the price from the seat
+                    'is_sold' => true, // Assuming the ticket is not sold initially
+                ]);
+
+                // Save the ticket to the database
+                $ticket->save();
+
+                // Create a ticket purchase record
+                $ticketPurchase = new TicketPurchase([
+                    'user_id' => $request->input('user_id'),
+                    'ticket_id' => $ticket->ticket_id, // Use the ID of the newly created ticket
+                    'purchase_date' => now(), // Assuming purchase date is the current date and time
+                ]);
+                $ticketPurchase->save(); // Save the ticket purchase to the database
             }
 
-            // Find the game by game_id
-            $game = Game::findOrFail($validatedData['game_id']);
+            \DB::commit();
 
-            // Check if the game is upcoming and hosted by club with ID 1
-            if ($game->state !== 'upcoming' || $game->host !== 1) {
-                return response()->json(['error' => 'The specified game is not upcoming or not hosted by the specified club'], 400);
-            }
-
-            // Find the seat by seat_id
-            $seat = Seat::where('seat_id',$validatedData['seat_id'])->first();
-
-            // Check if the seat is available
-            if ($seat->status !== 'available') {
-                return response()->json(['error' => 'The specified seat is not available'], 400);
-            }
-
-            // Create the ticket
-            $ticket = Ticket::create([
-                'game_id' => $game->game_id,
-                'seat_id' => $seat->seat_id,
-                'price' => $seat->price,
-                'is_sold' => false,
-            ]);
-
-            // Return success message along with the created ticket
-            return response()->json(['message' => 'Ticket created successfully', 'ticket' => new TicketResource($ticket)], 201);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 400);
+            return response()->json(['message' => 'Tickets purchased successfully'], 201);
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            // Rollback the transaction if any operation fails
+            \DB::rollback();
+
+            return response()->json(['message' => 'Failed to purchase tickets. Please try again.'], 500);
         }
     }
+
 
     public function update(Request $request)
     {
