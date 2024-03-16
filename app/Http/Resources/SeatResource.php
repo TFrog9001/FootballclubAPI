@@ -22,6 +22,7 @@ class SeatResource extends JsonResource
             'type' => $this->type,
             'price' => $this->price,
             'status' => $this->status,
+            // 'ticket_id' => $this->ticket->ticket_id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

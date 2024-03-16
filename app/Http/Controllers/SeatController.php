@@ -22,11 +22,16 @@ class SeatController extends Controller
         }
     }
 
-    public function show($stand)
+    public function show($game_id, $stand)
     {
         try {
-            $seats = Seat::where("stand", $stand)->get(); // Sử dụng get() để lấy danh sách các ghế
-            return response()->json(['seats' => SeatResource::collection($seats)]); // Sử dụng SeatResource::collection để chuyển đổi danh sách ghế
+            $seats = Seat::leftJoin('tickets', 'seats.seat_id', '=', 'tickets.seat_id')
+                ->where('seats.stand', $stand)
+                ->where('tickets.game_id', $game_id)
+                ->orderBy('seat_number')
+                ->get(['seats.*', 'tickets.*']);
+
+            return response()->json(['seats' => $seats]); // Sử dụng SeatResource::collection để chuyển đổi danh sách ghế
         } catch (Exception $e) {
             return response()->json(['error' => 'Seat not found'], 404);
         }

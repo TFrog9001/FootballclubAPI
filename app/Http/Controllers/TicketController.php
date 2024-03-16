@@ -28,7 +28,7 @@ class TicketController extends Controller
     public function show($id)
     {
         try {
-            $ticket = Ticket::findOrFail($id);
+            $ticket = Ticket::where("ticket_id",$id);
             return response()->json(['ticket' => new TicketResource($ticket)]);
         } catch (Exception $e) {
             return response()->json(['error' => 'Ticket not found'], 404);
