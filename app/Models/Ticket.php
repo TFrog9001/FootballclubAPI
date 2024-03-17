@@ -19,7 +19,6 @@ class Ticket extends Model
      */
     protected $fillable = [
         'game_id',
-        'seat_id',
         'price',
         'is_sold',
     ];
@@ -32,12 +31,9 @@ class Ticket extends Model
         return $this->belongsTo(Game::class, 'game_id', 'game_id');
     }
 
-    /**
-     * Get the seat that the ticket belongs to.
-     */
-    public function seat()
+    public function seatRelations()
     {
-        return $this->belongsTo(Seat::class, 'seat_id', 'seat_id');
+        return $this->hasMany(TicketSeatRelation::class, 'ticket_id', 'ticket_id');
     }
 
     /**

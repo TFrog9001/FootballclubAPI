@@ -23,6 +23,11 @@ class TicketPurchase extends Model
         'purchase_date',
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'user_id');
+    }
+
     /**
      * Get the ticket associated with the purchase.
      */

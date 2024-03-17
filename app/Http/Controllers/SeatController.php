@@ -25,21 +25,26 @@ class SeatController extends Controller
     public function show($game_id, $stand)
     {
         try {
-            $seats = Seat::leftJoin('tickets', 'seats.seat_id', '=', 'tickets.seat_id')
-                ->where('seats.stand', '=', $stand)
+            // Thực hiện truy vấn để lấy thông tin của các ghế
+            $seats = Seat::leftJoin('ticket_seat_relation as tsr', 'seats.seat_id', '=', 'tsr.seat_id')
+                ->leftJoin('tickets as t', 't.ticket_id', '=', 'tsr.ticket_id')
+                ->where('seats.stand', $stand)
                 ->where(function ($query) use ($game_id) {
-                    $query->where('tickets.game_id', '=', $game_id) // Lọc theo trò chơi có ID là 1
-                        ->orWhereNull('tickets.game_id'); // Hoặc chưa có liên kết với bất kỳ trò chơi nào
+                    $query->where('t.game_id', $game_id)
+                        ->orWhereNull('t.game_id');
                 })
                 ->orderBy('seats.seat_number')
-                ->select('seats.*', 'tickets.seat_id AS ticket_seat_id', 'tickets.game_id', 'tickets.is_sold')
+                ->select('seats.*', 't.*')
                 ->get();
 
-            return response()->json(['seats' => $seats]); // Sử dụng SeatResource::collection để chuyển đổi danh sách ghế
+            // Trả về dữ liệu
+            return response()->json(['seats' => $seats]);
         } catch (Exception $e) {
+            // Xử lý lỗi nếu có
             return response()->json(['error' => 'Seat not found'], 404);
         }
     }
+
 
     public function create(Request $request)
     {

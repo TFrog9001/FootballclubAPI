@@ -27,8 +27,8 @@ class Seat extends Model
         return $this->belongsTo(Stadium::class, 'stadium_id', 'stadium_id');
     }
 
-    public function tickets()
+    public function ticketSeatRelations()
     {
-        return $this->hasMany(Ticket::class, 'seat_id', 'seat_id');
+        return $this->hasMany(TicketSeatRelation::class, 'seat_id', 'seat_id');
     }
 }

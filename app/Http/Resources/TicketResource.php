@@ -17,8 +17,16 @@ class TicketResource extends JsonResource
         return [
             'ticket_id' => $this->ticket_id,
             'game_id' => $this->game_id,
+            'price' => $this->price,
+            'seats' => $this->seatRelations->map(function ($relation) {
+                return [
+                    'seat_id' => $relation->seat->seat_id,
+                    'seat_number' => $relation->seat->seat_number,
+                    'type' => $relation->seat->type,
+                    'stand' => $relation->seat->stand,
+                ];
+            }) ?? null,
             'club_away' => $this->game->club,
-            'seat' => $this->seat,
             'stadium' => $this->game->stadium,
             'created_at' => $this->created_at,
         ];
