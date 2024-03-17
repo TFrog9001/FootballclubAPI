@@ -26,10 +26,14 @@ class SeatController extends Controller
     {
         try {
             $seats = Seat::leftJoin('tickets', 'seats.seat_id', '=', 'tickets.seat_id')
-                ->where('seats.stand', $stand)
-                ->where('tickets.game_id', $game_id)
-                ->orderBy('seat_number')
-                ->get(['seats.*', 'tickets.*']);
+                ->where('seats.stand', '=', $stand)
+                ->where(function ($query) use ($game_id) {
+                    $query->where('tickets.game_id', '=', $game_id) // Lọc theo trò chơi có ID là 1
+                        ->orWhereNull('tickets.game_id'); // Hoặc chưa có liên kết với bất kỳ trò chơi nào
+                })
+                ->orderBy('seats.seat_number')
+                ->select('seats.*', 'tickets.seat_id AS ticket_seat_id', 'tickets.game_id', 'tickets.is_sold')
+                ->get();
 
             return response()->json(['seats' => $seats]); // Sử dụng SeatResource::collection để chuyển đổi danh sách ghế
         } catch (Exception $e) {

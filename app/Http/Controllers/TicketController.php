@@ -18,7 +18,7 @@ class TicketController extends Controller
     public function index()
     {
         try {
-            $tickets = Ticket::all();
+            $tickets = Ticket::all()->sortBy('ticket_id');
             return response()->json(['tickets' => TicketResource::collection($tickets)], 200);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -26,14 +26,36 @@ class TicketController extends Controller
     }
 
     public function show($id)
-    {
-        try {
-            $ticket = Ticket::where("ticket_id",$id);
-            return response()->json(['ticket' => new TicketResource($ticket)]);
-        } catch (Exception $e) {
-            return response()->json(['error' => 'Ticket not found'], 404);
-        }
+{
+    try {
+        // Lấy ra một đối tượng Ticket thay vì câu truy vấn
+        $ticket = Ticket::findOrFail($id);
+        return response()->json(['ticket' => new TicketResource($ticket)]);
+    } catch (Exception $e) {
+        return response()->json(['error' => 'Ticket not found'], 404);
+    } catch (Exception $e) {
+        return response()->json(['error' => 'Something went wrong'], 500);
     }
+}
+
+public function tickets($user_id)
+{
+    try {
+        // Tìm các vé mà user đã mua
+        $tickets = Ticket::whereHas('purchases', function($query) use ($user_id) {
+            $query->where('user_id', $user_id);
+        })
+        ->orderBy('ticket_id')
+        ->get();
+
+        // Trả về dữ liệu dưới dạng JSON sử dụng TicketResource
+        return response()->json(['tickets' => TicketResource::collection($tickets)]);
+    } catch (Exception $e) {
+        // Xử lý ngoại lệ nếu có
+        return response()->json(['error' => 'Something went wrong'], 500);
+    }
+}
+
 
     public function create(Request $request)
     {

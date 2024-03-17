@@ -165,6 +165,7 @@ Route::post('/seats/delete',[SeatController::class, 'destroy']);
 // Ticket
 Route::get('/tickets', [TicketController::class, 'index']);
 Route::get('/tickets/{id}', [TicketController::class, 'show']);
+Route::get('/tickets/user/{user_id}', [TicketController::class, 'tickets']);
 Route::post('/tickets/create', [TicketController::class, 'create']);
 Route::post('/tickets/update', [TicketController::class, 'update']);
 
