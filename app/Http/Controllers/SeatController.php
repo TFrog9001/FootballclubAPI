@@ -34,7 +34,7 @@ class SeatController extends Controller
                         ->orWhereNull('t.game_id');
                 })
                 ->orderBy('seats.seat_number')
-                ->select('seats.*', 't.*')
+                ->select('seats.*', 't.ticket_id as ticket_id')
                 ->get();
 
             // Trả về dữ liệu
