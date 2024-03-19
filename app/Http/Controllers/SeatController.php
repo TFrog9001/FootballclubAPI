@@ -26,16 +26,16 @@ class SeatController extends Controller
     {
         try {
             // Thực hiện truy vấn để lấy thông tin của các ghế
-            $seats = Seat::leftJoin('ticket_seat_relation as tsr', 'seats.seat_id', '=', 'tsr.seat_id')
-                ->leftJoin('tickets as t', 't.ticket_id', '=', 'tsr.ticket_id')
-                ->where('seats.stand', $stand)
-                ->where(function ($query) use ($game_id) {
-                    $query->where('t.game_id', $game_id)
-                        ->orWhereNull('t.game_id');
+            $seats = Seat::select('seats.*', 't.ticket_id')
+                ->leftJoin('ticket_seat_relation AS tsr', 'seats.seat_id', '=', 'tsr.seat_id')
+                ->leftJoin('tickets AS t', function ($join) use ($game_id) {
+                    $join->on('t.ticket_id', '=', 'tsr.ticket_id')
+                        ->where('t.game_id', '=', $game_id);
                 })
+                ->where('seats.stand', $stand)
                 ->orderBy('seats.seat_number')
-                ->select('seats.*', 't.ticket_id as ticket_id')
                 ->get();
+
 
             // Trả về dữ liệu
             return response()->json(['seats' => $seats]);
