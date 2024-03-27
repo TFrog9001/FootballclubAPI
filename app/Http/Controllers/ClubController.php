@@ -75,7 +75,7 @@ class ClubController extends Controller
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 400);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+            return response()->json(['errors' => $e->getMessage()], 500);
         }
     }
 
@@ -92,7 +92,6 @@ class ClubController extends Controller
                     'max:100',
                     Rule::unique('clubs', 'name')->ignore($id, 'club_id'),
                 ],
-                'image' => 'image|mimes:jpeg,png,jpg,webp,PNG,JPG|max:2048',
             ]);
 
             // Update the club fields
@@ -101,6 +100,9 @@ class ClubController extends Controller
             // If a new image is provided, upload and update the image path
             if ($request->hasFile('image')) {
                 // Kiểm tra và tải lên ảnh người dùng mới nếu có
+                $this->validate($request, [
+                    'image' => 'image|mimes:jpeg,png,jpg,webp,PNG,JPG|max:2048',
+                ]);
                 $oldImage = $club->image;
                 if ($oldImage) {
                     $oldImagePath = str_replace('/storage/', 'public/', $oldImage);
@@ -118,8 +120,10 @@ class ClubController extends Controller
             $club->save();
 
             return response()->json(['club' => new ClubResource($club)], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 400);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+            return response()->json(['errors' => $e->getMessage()], 500);
         }
     }
 
