@@ -48,8 +48,8 @@ class ValidationService
         return [
             'name' => 'required|unique:stadiums,name|max:100',
             'address' => 'required|max:255',
-            'image' => 'image|mimes:jpeg,png,jpg,webp,PNG,JPG|max:2048',
-            'capacity' => 'integer|min:0'
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp,PNG,JPG|max:2048',
+            'capacity' => 'required|integer|min:0'
         ];
     }
 
